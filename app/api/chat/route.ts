@@ -1,5 +1,5 @@
 import { groq } from '@ai-sdk/groq';
-import { streamText, convertToModelMessages } from 'ai';
+import { streamText } from 'ai';
 
 export const maxDuration = 60; 
 
@@ -7,9 +7,15 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
+    // Manually map messages to guarantee a safe structure without helper function bugs
+    const formattedMessages = messages.map((m: any) => ({
+      role: m.role,
+      content: m.content || m.parts?.map((p: any) => p.text || '').join('') || '',
+    }));
+
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
-      messages: convertToModelMessages(messages),
+      messages: formattedMessages,
       system: `You are an expert startup validator and business planner. 
       When a user submits an idea:
       1. Analyze the idea based on your extensive knowledge of markets, competitors, and industry trends.
@@ -17,7 +23,6 @@ export async function POST(req: Request) {
       3. Generate a structured business plan including an Executive Summary, Market Analysis, Competitive Landscape, and Go-to-Market strategy.`,
     }); 
 
-    // Directly return the UI message stream response without crashing tool-loops
     return (result as any).toUIMessageStreamResponse();
 
   } catch (error: any) {
