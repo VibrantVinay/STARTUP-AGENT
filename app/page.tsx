@@ -7,8 +7,8 @@ export default function Chat() {
   // 1. Manually manage input state
   const [input, setInput] = useState('');
   
-  // 2. Extract the new v5 properties
-  const { messages, status, sendMessage } = useChat();
+  // Extract the new error property
+  const { messages, status, sendMessage, error } = useChat();
   
   // 3. Derive loading state from the new status string
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -66,6 +66,15 @@ export default function Chat() {
             </div>
           </div>
         ))}
+        
+        {/* NEW BLOCK: Display backend errors so failures are visible */}
+        {error && (
+          <div className="flex flex-col items-center p-5 rounded-xl bg-red-50 text-red-600 border border-red-200">
+            <strong>Connection Error</strong>
+            <span className="text-sm mt-1 text-center">{error.message}</span>
+            <span className="text-xs text-red-400 mt-2">Check your Vercel logs or verify your API keys.</span>
+          </div>
+        )}
       </div>
 
       <form 
