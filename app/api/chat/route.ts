@@ -1,5 +1,6 @@
 import { groq } from '@ai-sdk/groq';
-import { streamText, tool, convertToCoreMessages } from 'ai';
+// 1. Updated import based on the compiler's suggestion
+import { streamText, tool, convertToModelMessages } from 'ai';
 import { z } from 'zod';
 
 export const maxDuration = 60; 
@@ -8,11 +9,10 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    // We cast the configuration to 'any' to bypass strict TS false-positives during Vercel builds
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
-      // Crucial fix: Converting UI messages to Core messages
-      messages: convertToCoreMessages(messages),
+      // 2. Updated function call to translate the messages
+      messages: convertToModelMessages(messages),
       system: `You are an expert startup validator and business planner. 
       When a user submits an idea:
       1. Always search the web for direct competitors, market size, and current industry trends.
@@ -48,7 +48,6 @@ export async function POST(req: Request) {
           },
         }),
       },
-      // Enables the agent to pause, search, read, and resume
       maxSteps: 5, 
     } as any); 
 
