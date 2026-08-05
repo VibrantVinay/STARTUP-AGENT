@@ -280,7 +280,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
             className="p-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-400 hover:text-white transition-all flex items-center gap-2 text-xs font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round5" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
             Return to Globe
           </button>
