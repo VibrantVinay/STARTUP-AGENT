@@ -44,5 +44,5 @@ export async function POST(req: Request) {
     stopWhen: stepCountIs(5), 
   });
 
-  return (result as any).toDataStreamResponse();
+  return result.toUIMessageStreamResponse();
 }
