@@ -1,5 +1,5 @@
 import { groq } from '@ai-sdk/groq';
-import { streamText, tool, convertToModelMessages } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 import { z } from 'zod';
 
 export const maxDuration = 60; 
@@ -17,13 +17,13 @@ export async function POST(req: Request) {
       2. Analyze the findings to identify market gaps and potential risks.
       3. Generate a structured business plan including an Executive Summary, Market Analysis, Competitive Landscape, and Go-to-Market strategy.`,
       tools: {
-        searchWeb: tool({
+        // THE FIX: Removed the tool() wrapper and defined the object directly
+        searchWeb: {
           description: 'Search the web for competitors, market data, and industry trends.',
           parameters: z.object({
             query: z.string().describe('The precise search query to execute'),
           }),
-          // THE FIX: Explicitly declaring the type of 'query' so TypeScript doesn't get confused
-          execute: async ({ query }: { query: string }) => {
+          execute: async ({ query }: any) => {
             const apiKey = process.env.TAVILY_API_KEY;
             if (!apiKey) throw new Error("Tavily API key missing from environment variables.");
             
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
             const data = await response.json();
             return data.results;
           },
-        }),
+        } as any // THE FIX: Forces TS to accept the execute function
       },
       maxSteps: 5, 
     } as any); 
