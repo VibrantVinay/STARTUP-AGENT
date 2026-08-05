@@ -44,7 +44,7 @@ export default function Chat() {
                 
                 // Render tool execution states
                 if (part.type === 'tool-searchWeb') {
-                  const query = (part.args as any)?.query || "market data";
+                  const query = (part as any).input?.query || "market data";
                   
                   if (part.state === 'output-available') {
                      return (
