@@ -1,5 +1,4 @@
 import { groq } from '@ai-sdk/groq';
-// 1. Updated import based on the compiler's suggestion
 import { streamText, tool, convertToModelMessages } from 'ai';
 import { z } from 'zod';
 
@@ -11,7 +10,6 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
-      // 2. Updated function call to translate the messages
       messages: convertToModelMessages(messages),
       system: `You are an expert startup validator and business planner. 
       When a user submits an idea:
@@ -24,7 +22,8 @@ export async function POST(req: Request) {
           parameters: z.object({
             query: z.string().describe('The precise search query to execute'),
           }),
-          execute: async ({ query }) => {
+          // THE FIX: Explicitly declaring the type of 'query' so TypeScript doesn't get confused
+          execute: async ({ query }: { query: string }) => {
             const apiKey = process.env.TAVILY_API_KEY;
             if (!apiKey) throw new Error("Tavily API key missing from environment variables.");
             
