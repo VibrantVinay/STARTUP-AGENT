@@ -17,7 +17,6 @@ export async function POST(req: Request) {
       2. Analyze the findings to identify market gaps and potential risks.
       3. Generate a structured business plan including an Executive Summary, Market Analysis, Competitive Landscape, and Go-to-Market strategy.`,
       tools: {
-        // THE FIX: Removed the tool() wrapper and defined the object directly
         searchWeb: {
           description: 'Search the web for competitors, market data, and industry trends.',
           parameters: z.object({
@@ -45,12 +44,13 @@ export async function POST(req: Request) {
             const data = await response.json();
             return data.results;
           },
-        } as any // THE FIX: Forces TS to accept the execute function
+        } as any
       },
       maxSteps: 5, 
     } as any); 
 
-    const response = result.toDataStreamResponse();
+    // THE FIX: Using the exact method the compiler suggested
+    const response = result.toTextStreamResponse();
     return response;
 
   } catch (error: any) {
