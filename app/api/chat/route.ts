@@ -1,5 +1,5 @@
 import { groq } from '@ai-sdk/groq';
-import { streamText, tool } from 'ai';
+import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 
 export const maxDuration = 60; 
@@ -8,7 +8,6 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    // We cast the entire object to 'any' to bypass strict TS checks safely
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
       messages,
@@ -47,15 +46,15 @@ export async function POST(req: Request) {
           },
         }),
       },
-      maxSteps: 5, 
-    } as any);
+      // Correct V5 looping syntax
+      stopWhen: stepCountIs(5),
+    });
 
-    // THE FIX: Restoring the correct Vercel AI SDK method
-    return (result as any).toDataStreamResponse();
+    // Correct V5 UI message stream response
+    return result.toUIMessageStreamResponse();
 
   } catch (error: any) {
     console.error("Backend Error:", error);
-    // Returning plain text allows useChat to easily display the exact error message
     return new Response(
       error.message || "An unknown server error occurred.",
       { status: 500 }
