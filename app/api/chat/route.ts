@@ -49,9 +49,8 @@ export async function POST(req: Request) {
       maxSteps: 5, 
     } as any); 
 
-    // THE FIX: Using the exact method the compiler suggested
-    const response = result.toTextStreamResponse();
-    return response;
+    // THE FIX: Use toUIMessageStreamResponse so the frontend useChat hook can read it properly
+    return result.toUIMessageStreamResponse();
 
   } catch (error: any) {
     console.error("Backend Error:", error);
