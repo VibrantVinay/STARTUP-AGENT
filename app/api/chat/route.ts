@@ -1,5 +1,5 @@
 import { groq } from '@ai-sdk/groq';
-import { streamText, tool } from 'ai';
+import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 
 export const maxDuration = 60; 
@@ -18,7 +18,8 @@ export async function POST(req: Request) {
     tools: {
       searchWeb: tool({
         description: 'Search the web for competitors, market data, and industry trends.',
-        parameters: z.object({
+        // FIX 1: 'parameters' is now 'inputSchema'
+        inputSchema: z.object({
           query: z.string().describe('The precise search query to execute'),
         }),
         execute: async ({ query }) => {
@@ -39,7 +40,8 @@ export async function POST(req: Request) {
         },
       }),
     },
-    maxSteps: 5, 
+    // FIX 2: 'maxSteps' is now 'stopWhen' using 'stepCountIs'
+    stopWhen: stepCountIs(5), 
   });
 
   return result.toDataStreamResponse();
