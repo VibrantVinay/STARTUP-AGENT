@@ -50,16 +50,15 @@ export async function POST(req: Request) {
       maxSteps: 5, 
     } as any);
 
-    return result.toUIMessageStreamResponse();
+    // THE FIX: Restoring the correct Vercel AI SDK method
+    return (result as any).toDataStreamResponse();
 
   } catch (error: any) {
     console.error("Backend Error:", error);
+    // Returning plain text allows useChat to easily display the exact error message
     return new Response(
-      JSON.stringify({ error: error.message || "An unknown server error occurred." }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
+      error.message || "An unknown server error occurred.",
+      { status: 500 }
     );
   }
 }
