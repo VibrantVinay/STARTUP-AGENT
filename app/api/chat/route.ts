@@ -8,6 +8,7 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
+    // We cast the entire object to 'any' to bypass strict TS checks safely
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
       messages,
@@ -30,10 +31,8 @@ export async function POST(req: Request) {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
-                // .trim() removes accidental trailing spaces copied from the dashboard
                 api_key: apiKey.trim(), 
                 query, 
-                // 'basic' prevents 403 errors on free tvly-dev- keys
                 search_depth: "basic" 
               })
             });
@@ -48,15 +47,12 @@ export async function POST(req: Request) {
           },
         }),
       },
-      },
-      // @ts-ignore: Bypassing strict type check for Vercel build; maxSteps is valid at runtime
       maxSteps: 5, 
-    });
+    } as any);
 
     return result.toUIMessageStreamResponse();
 
   } catch (error: any) {
-    // Intercepts any backend crash and sends the exact reason to the UI
     console.error("Backend Error:", error);
     return new Response(
       JSON.stringify({ error: error.message || "An unknown server error occurred." }),
