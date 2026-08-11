@@ -101,7 +101,7 @@ function LandingView({ onLaunch }: { onLaunch: () => void }) {
             Harness real-time web agents, multi-step market analysis, and advanced neural pipelines to turn raw ideas into investor-ready business plans instantly.
           </p>
           <button onClick={onLaunch} className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold text-white shadow-xl shadow-indigo-600/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-3">
-            Launch Startup Agent
+            Launch Neurovalidate Agent
           </button>
         </div>
         <div className="relative w-full h-[450px] md:h-[550px] flex items-center justify-center">
@@ -158,10 +158,10 @@ function ChatView({ onBack }: { onBack: () => void }) {
             </div>
             {/* UPDATED DESCRIPTION CONTENT */}
             <p className="text-gray-300 md:text-lg max-w-3xl leading-relaxed text-justify mb-4">
-              The <strong className="text-indigo-400">Startup Validator Agent</strong> is an interactive AI tool designed to help entrepreneurs flesh out and pressure-test their new business ideas. Just type in your basic concept, and the agent acts as an objective sounding board—analyzing the market, scoping out competitors, and pointing out potential blind spots. 
+              The <strong className="text-indigo-400">Neurovalidate Validator Agent</strong> is an interactive AI tool designed to help entrepreneurs test their new business ideas. Just type in your basic concept, and the agent acts as an objective sounding board analyzing the market, scoping out competitors, and pointing out potential blind spots. 
             </p>
             <p className="text-gray-400 max-w-3xl leading-relaxed text-justify">
-              We don't need to have everything figured out at once; as our idea evolves, we can easily drop in new details about our target audience, revenue model, or marketing strategy, and the agent will automatically weave them together into a clear, actionable business roadmap. Finally, risk factors and constraints can be analyzed in our interactive BI interface.
+              We don't need to have everything figured out at once as our idea evolves, we can easily drop in new details about our target audience, revenue model, or marketing strategy, and the agent will automatically weave them together into a clear, actionable business roadmap. Finally, risk factors and constraints can be analyzed in our interactive BI interface.
             </p>
           </div>
         )}
