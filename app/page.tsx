@@ -129,6 +129,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
   };
 
   // Extract the JSON data from the latest AI message
+  // Extract the JSON data from the latest AI message
   const extractDashboardData = () => {
     let latestData = {
       riskData: [
@@ -152,7 +153,8 @@ function ChatView({ onBack }: { onBack: () => void }) {
     for (let i = messages.length - 1; i >= 0; i--) {
       const m = messages[i];
       if (m.role === 'assistant') {
-        const text = m.parts?.map((p: any) => p.text).join('') || m.content || '';
+        // Updated line below to fix the TypeScript 'UIMessage' error
+        const text = m.parts?.map((p: any) => p.text).join('') || (m as any).content || '';
         const match = text.match(/<dashboard_data>([\s\S]*?)<\/dashboard_data>/);
         if (match && match[1]) {
           try {
@@ -169,7 +171,6 @@ function ChatView({ onBack }: { onBack: () => void }) {
     }
     return latestData;
   };
-
   const dynamicDashboardData = extractDashboardData();
 
   // Remove the <dashboard_data> block from the visible chat output
