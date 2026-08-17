@@ -18,7 +18,9 @@
     "react-dom": "^18",
     "recharts": "^2.12.0",
     "three": "^0.160.0",
-    "zod": "latest"
+    "zod": "latest",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
     "@types/node": "^20",
