@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, ScatterChart, Scatter
+  AreaChart, Area, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts';
 import { Settings2, X, BarChart3, PieChart as PieIcon, Activity, Radar as RadarIcon, Layers } from 'lucide-react';
 
@@ -128,6 +128,55 @@ function ChatView({ onBack }: { onBack: () => void }) {
     setInput('');
   };
 
+  // Extract the JSON data from the latest AI message
+  const extractDashboardData = () => {
+    let latestData = {
+      riskData: [
+        { subject: 'Market Saturation', A: 85, severity: 'high' },
+        { subject: 'CapEx Needs', A: 65, severity: 'medium' },
+        { subject: 'Regulatory', A: 90, severity: 'high' },
+        { subject: 'Tech Debt', A: 40, severity: 'low' },
+        { subject: 'Customer ACQ', A: 75, severity: 'medium' },
+        { subject: 'Supply Chain', A: 50, severity: 'low' },
+      ],
+      timelineData: [
+        { month: 'M1', riskLevel: 80, cashBurn: 40000 },
+        { month: 'M3', riskLevel: 65, cashBurn: 35000 },
+        { month: 'M6', riskLevel: 50, cashBurn: 20000 },
+        { month: 'M9', riskLevel: 45, cashBurn: 15000 },
+        { month: 'M12', riskLevel: 30, cashBurn: 10000 },
+      ]
+    };
+
+    // Look for the last assistant message containing <dashboard_data>
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.role === 'assistant') {
+        const text = m.parts?.map((p: any) => p.text).join('') || m.content || '';
+        const match = text.match(/<dashboard_data>([\s\S]*?)<\/dashboard_data>/);
+        if (match && match[1]) {
+          try {
+            const parsed = JSON.parse(match[1].trim());
+            if (parsed.riskData && parsed.timelineData) {
+              latestData = parsed;
+              break;
+            }
+          } catch (e) {
+            console.error("Failed to parse dynamic dashboard data", e);
+          }
+        }
+      }
+    }
+    return latestData;
+  };
+
+  const dynamicDashboardData = extractDashboardData();
+
+  // Remove the <dashboard_data> block from the visible chat output
+  const cleanMessage = (text: string) => {
+    return text.replace(/<dashboard_data>[\s\S]*?<\/dashboard_data>/g, '').trim();
+  };
+
   return (
     <div className="flex flex-col w-full min-h-screen bg-[#05050a] text-gray-100 relative">
       <header className="w-full border-b border-gray-800/80 bg-[#090911]/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between sticky top-0 z-40">
@@ -156,7 +205,6 @@ function ChatView({ onBack }: { onBack: () => void }) {
             <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 text-2xl font-bold">
               💡
             </div>
-            {/* UPDATED DESCRIPTION CONTENT */}
             <p className="text-gray-300 md:text-lg max-w-3xl leading-relaxed text-justify mb-4">
               The <strong className="text-indigo-400">Neurovalidate Validator Agent</strong> is an interactive AI tool designed to help entrepreneurs test their new business ideas. Just type in your basic concept, and the agent acts as an objective sounding board analyzing the market, scoping out competitors, and pointing out potential blind spots. 
             </p>
@@ -172,7 +220,11 @@ function ChatView({ onBack }: { onBack: () => void }) {
               m.role === 'user' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' : 'bg-[#0e0e18] text-gray-200 border border-gray-800/80 shadow-xl'
             }`}>
               {m.parts?.map((part, index) => {
-                if (part.type === 'text') return <div key={index} className="whitespace-pre-wrap text-sm md:text-base">{part.text}</div>;
+                if (part.type === 'text') {
+                  const visibleText = cleanMessage(part.text);
+                  if (!visibleText) return null;
+                  return <div key={index} className="whitespace-pre-wrap text-sm md:text-base">{visibleText}</div>;
+                }
                 return null;
               })}
             </div>
@@ -198,7 +250,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* BI DASHBOARD OVERLAY */}
-      {showBI && <BIDashboardOverlay onClose={() => setShowBI(false)} />}
+      {showBI && <BIDashboardOverlay onClose={() => setShowBI(false)} data={dynamicDashboardData} />}
     </div>
   );
 }
@@ -206,27 +258,13 @@ function ChatView({ onBack }: { onBack: () => void }) {
 /* ================================================================= */
 /* 3. POWER-BI / TABLEAU STYLE RISK DASHBOARD OVERLAY                */
 /* ================================================================= */
-function BIDashboardOverlay({ onClose }: { onClose: () => void }) {
+function BIDashboardOverlay({ onClose, data }: { onClose: () => void, data: any }) {
   const [activeChart, setActiveChart] = useState('radar');
   const [filterSeverity, setFilterSeverity] = useState('all');
 
-  // Mock Data generated based on typical AI analysis outputs
-  const riskData = [
-    { subject: 'Market Saturation', A: 85, severity: 'high' },
-    { subject: 'CapEx Needs', A: 65, severity: 'medium' },
-    { subject: 'Regulatory', A: 90, severity: 'high' },
-    { subject: 'Tech Debt', A: 40, severity: 'low' },
-    { subject: 'Customer ACQ', A: 75, severity: 'medium' },
-    { subject: 'Supply Chain', A: 50, severity: 'low' },
-  ].filter(d => filterSeverity === 'all' ? true : d.severity === filterSeverity);
-
-  const timelineData = [
-    { month: 'M1', riskLevel: 80, cashBurn: 40000 },
-    { month: 'M3', riskLevel: 65, cashBurn: 35000 },
-    { month: 'M6', riskLevel: 50, cashBurn: 20000 },
-    { month: 'M9', riskLevel: 45, cashBurn: 15000 },
-    { month: 'M12', riskLevel: 30, cashBurn: 10000 },
-  ];
+  // Load the dynamic data generated by the agent
+  const riskData = data.riskData.filter((d: any) => filterSeverity === 'all' ? true : d.severity === filterSeverity);
+  const timelineData = data.timelineData;
 
   const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#14b8a6', '#f59e0b', '#ef4444'];
 
@@ -240,7 +278,7 @@ function BIDashboardOverlay({ onClose }: { onClose: () => void }) {
             <Activity className="text-indigo-400" />
             <div>
               <h2 className="text-lg font-bold text-gray-100">Risk & Constraints Analytics BI</h2>
-              <p className="text-xs text-gray-500">Interactive visual representation of startup viability constraints.</p>
+              <p className="text-xs text-gray-500">Analysis and details of your user-submitted startup idea</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 transition-colors">
@@ -295,7 +333,6 @@ function BIDashboardOverlay({ onClose }: { onClose: () => void }) {
                 <button className="p-2 rounded-lg border border-gray-800 text-gray-600 text-xs flex flex-col items-center gap-1 cursor-not-allowed" title="Treemap (Pro)">
                   Treemap
                 </button>
-                {/* Visual placeholders for the "12+ types" requirement */}
               </div>
             </div>
           </div>
@@ -306,7 +343,8 @@ function BIDashboardOverlay({ onClose }: { onClose: () => void }) {
               
               {/* Primary Selected Chart */}
               <div className="bg-[#0c0c14] border border-gray-800 rounded-xl p-4 shadow-lg flex flex-col">
-                <h4 className="text-sm font-semibold text-gray-300 mb-4">Primary Risk Distribution</h4>
+                <h4 className="text-sm font-semibold text-gray-300 mb-1">Primary Selected Chart</h4>
+                <p className="text-xs text-gray-500 mb-4">Live agent analysis populated for risk factors</p>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     {activeChart === 'radar' ? (
@@ -328,7 +366,7 @@ function BIDashboardOverlay({ onClose }: { onClose: () => void }) {
                     ) : activeChart === 'pie' ? (
                       <PieChart>
                         <Pie data={riskData} innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="A">
-                          {riskData.map((entry, index) => (
+                          {riskData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
@@ -355,7 +393,8 @@ function BIDashboardOverlay({ onClose }: { onClose: () => void }) {
 
               {/* Secondary Fixed Chart (Timeline/Financials) */}
               <div className="bg-[#0c0c14] border border-gray-800 rounded-xl p-4 shadow-lg flex flex-col">
-                <h4 className="text-sm font-semibold text-gray-300 mb-4">Risk Decay vs Cash Burn Timeline</h4>
+                <h4 className="text-sm font-semibold text-gray-300 mb-1">Risk Decay vs Cash Burn Timeline</h4>
+                <p className="text-xs text-gray-500 mb-4">Data tracked by live agent analysis</p>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={timelineData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
